@@ -1,0 +1,4 @@
+flowchart LR
+    Gem300Contracts["Dreamine.Gem300.Abstractions"] --> GemContracts["Dreamine.Gem.Abstractions"]
+    Gem300Contracts --> SecsContracts["Dreamine.Secs.Abstractions"]
+    Runtime["Dreamine.Gem300"] -. implements .-> Gem300Contracts
