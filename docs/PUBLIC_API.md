@@ -4,7 +4,7 @@ Assembly: `Dreamine.Gem300.Abstractions`
 
 This inventory is generated from the compiled Release assembly. It is an audit artifact, not an additional compatibility promise.
 
-Exported types: **35**
+Exported types: **38**
 
 ## Types
 
@@ -56,7 +56,7 @@ Exported types: **35**
 ### `public interface Dreamine.Gem300.Abstractions.Interfaces.IGem300ObjectService`
 
 - `System.Boolean Remove(Dreamine.Gem300.Abstractions.Model.Gem300ObjectKey key)`
-- `System.Boolean TryGetAttribute(Dreamine.Gem300.Abstractions.Model.Gem300ObjectKey key, System.String name, Dreamine.Secs.Abstractions.Model.SecsItem& value)`
+- `System.Boolean TryGetAttribute(Dreamine.Gem300.Abstractions.Model.Gem300ObjectKey key, System.String name, out Dreamine.Secs.Abstractions.Model.SecsItem value)`
 - `System.Boolean TrySetAttribute(Dreamine.Gem300.Abstractions.Model.Gem300ObjectKey key, System.String name, Dreamine.Secs.Abstractions.Model.SecsItem value)`
 - `System.Collections.Generic.IReadOnlyDictionary<System.String, Dreamine.Secs.Abstractions.Model.SecsItem> GetAttributes(Dreamine.Gem300.Abstractions.Model.Gem300ObjectKey key)`
 - `System.Threading.Tasks.ValueTask<Dreamine.Gem.Abstractions.Model.GemCommandResult> ExecuteActionAsync(Dreamine.Gem300.Abstractions.Model.Gem300ObjectKey key, System.String actionName, System.Collections.Generic.IReadOnlyDictionary<System.String, Dreamine.Secs.Abstractions.Model.SecsItem> parameters, System.TimeSpan timeout, System.Threading.CancellationToken cancellationToken)`
@@ -94,7 +94,7 @@ Exported types: **35**
 
 - `Dreamine.Gem300.Abstractions.Model.SubstrateSnapshot Get(System.String substrateId)`
 - `Dreamine.Gem300.Abstractions.States.MaterialLocationState GetLocationState(System.String locationId)`
-- `System.Boolean TryGet(System.String substrateId, Dreamine.Gem300.Abstractions.Model.SubstrateSnapshot& substrate)`
+- `System.Boolean TryGet(System.String substrateId, out Dreamine.Gem300.Abstractions.Model.SubstrateSnapshot substrate)`
 - `System.Void BeginProcessing(System.String substrateId)`
 - `System.Void CompleteProcessing(System.String substrateId, Dreamine.Gem300.Abstractions.States.SubstrateProcessingState result)`
 - `System.Void ConfirmId(System.String substrateId)`
@@ -107,6 +107,9 @@ Exported types: **35**
 ### `public sealed class Dreamine.Gem300.Abstractions.Model.CarrierArrivalPlan`
 
 - `CarrierArrivalPlan(System.String portId, System.String carrierId, System.Collections.Generic.IEnumerable<Dreamine.Gem300.Abstractions.States.CarrierSlotState> slotMap, System.Collections.Generic.IEnumerable<Dreamine.Gem300.Abstractions.Model.SubstrateArrivalPlan> substrates)`
+- `CarrierArrivalPlan(System.String portId, System.String carrierId, System.Collections.Generic.IEnumerable<Dreamine.Gem300.Abstractions.States.CarrierSlotState> slotMap, System.Collections.Generic.IEnumerable<Dreamine.Gem300.Abstractions.Model.SubstrateArrivalPlan> substrates, System.Collections.Generic.IEnumerable<Dreamine.Gem300.Abstractions.Model.CarrierSubstrateSlotAssignment> slotAssignments)`
+- `System.Boolean HasExplicitSlotAssignments { get; }`
+- `System.Collections.Generic.IReadOnlyList<Dreamine.Gem300.Abstractions.Model.CarrierSubstrateSlotAssignment> SlotAssignments { get; }`
 - `System.Collections.Generic.IReadOnlyList<Dreamine.Gem300.Abstractions.Model.SubstrateArrivalPlan> Substrates { get; }`
 - `System.Collections.Generic.IReadOnlyList<Dreamine.Gem300.Abstractions.States.CarrierSlotState> SlotMap { get; }`
 - `System.String CarrierId { get; }`
@@ -121,6 +124,12 @@ Exported types: **35**
 - `System.Collections.Generic.IReadOnlyList<Dreamine.Gem300.Abstractions.States.CarrierSlotState> SlotMap { get; }`
 - `System.String Id { get; }`
 - `System.String PortId { get; }`
+
+### `public sealed class Dreamine.Gem300.Abstractions.Model.CarrierSubstrateSlotAssignment`
+
+- `CarrierSubstrateSlotAssignment(System.Int32 slotIndex, System.String substrateId)`
+- `System.Int32 SlotIndex { get; }`
+- `System.String SubstrateId { get; }`
 
 ### `public sealed class Dreamine.Gem300.Abstractions.Model.ControlJobDefinition`
 
@@ -146,10 +155,31 @@ Exported types: **35**
 ### `public sealed class Dreamine.Gem300.Abstractions.Model.Gem300DomainEvent`
 
 - `Dreamine.Gem300.Abstractions.States.Gem300EventKind Kind { get; }`
+- `Gem300DomainEvent(System.Guid journalId, System.Int64 sequence, Dreamine.Gem300.Abstractions.States.Gem300EventKind kind, System.String aggregateType, System.String aggregateId, System.DateTimeOffset occurredAt)`
 - `Gem300DomainEvent(System.Int64 sequence, Dreamine.Gem300.Abstractions.States.Gem300EventKind kind, System.String aggregateId, System.DateTimeOffset occurredAt)`
 - `System.DateTimeOffset OccurredAt { get; }`
+- `System.Guid JournalId { get; }`
 - `System.Int64 Sequence { get; }`
 - `System.String AggregateId { get; }`
+- `System.String AggregateType { get; }`
+
+### `public sealed class Dreamine.Gem300.Abstractions.Model.Gem300EventJournalHealth`
+
+- `Gem300EventJournalHealth(System.Guid journalId, System.Int32 capacity, System.Int32 retainedCount, System.Int64 totalRecorded, System.Int64 droppedCount, System.Nullable<System.Int64> firstRetainedSequence, System.Nullable<System.Int64> lastRetainedSequence)`
+- `System.Guid JournalId { get; }`
+- `System.Int32 Capacity { get; }`
+- `System.Int32 RetainedCount { get; }`
+- `System.Int64 DroppedCount { get; }`
+- `System.Int64 TotalRecorded { get; }`
+- `System.Nullable<System.Int64> FirstRetainedSequence { get; }`
+- `System.Nullable<System.Int64> LastRetainedSequence { get; }`
+
+### `public sealed class Dreamine.Gem300.Abstractions.Model.Gem300EventPublisherHealth`
+
+- `Gem300EventPublisherHealth(System.Int64 failureCount, System.String lastError, System.Nullable<System.DateTimeOffset> lastFailureAt)`
+- `System.Int64 FailureCount { get; }`
+- `System.Nullable<System.DateTimeOffset> LastFailureAt { get; }`
+- `System.String LastError { get; }`
 
 ### `public sealed class Dreamine.Gem300.Abstractions.Model.Gem300ObjectKey`
 
@@ -180,9 +210,11 @@ Exported types: **35**
 
 ### `public sealed class Dreamine.Gem300.Abstractions.Model.ProcessJobSnapshot`
 
+- `Dreamine.Gem.Abstractions.Model.GemProcessProgram ProcessProgram { get; }`
 - `Dreamine.Gem300.Abstractions.Model.ProcessJobDefinition Definition { get; }`
 - `Dreamine.Gem300.Abstractions.States.ProcessJobState State { get; }`
 - `ProcessJobSnapshot(Dreamine.Gem300.Abstractions.Model.ProcessJobDefinition definition, Dreamine.Gem300.Abstractions.States.ProcessJobState state)`
+- `ProcessJobSnapshot(Dreamine.Gem300.Abstractions.Model.ProcessJobDefinition definition, Dreamine.Gem300.Abstractions.States.ProcessJobState state, Dreamine.Gem.Abstractions.Model.GemProcessProgram processProgram)`
 
 ### `public sealed class Dreamine.Gem300.Abstractions.Model.SubstrateArrivalPlan`
 

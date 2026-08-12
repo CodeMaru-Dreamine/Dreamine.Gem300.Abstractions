@@ -47,14 +47,24 @@ public sealed class Gem300DomainEvent
 {
     /// <summary>\if KO 도메인 이벤트를 만듭니다. \endif \if EN Creates a domain event. \endif</summary>
     public Gem300DomainEvent(long sequence, Gem300EventKind kind, string aggregateId, DateTimeOffset occurredAt)
+        : this(Guid.NewGuid(), sequence, kind, kind.ToString(), aggregateId, occurredAt) { }
+    /// <summary>\if KO 저널 및 Aggregate 유형을 포함하는 도메인 이벤트를 만듭니다. \endif \if EN Creates a domain event with journal and aggregate-type identity. \endif</summary>
+    public Gem300DomainEvent(Guid journalId, long sequence, Gem300EventKind kind, string aggregateType, string aggregateId, DateTimeOffset occurredAt)
     {
-        if (sequence <= 0) throw new ArgumentOutOfRangeException(nameof(sequence)); ArgumentException.ThrowIfNullOrWhiteSpace(aggregateId);
-        Sequence = sequence; Kind = kind; AggregateId = aggregateId; OccurredAt = occurredAt;
+        if (journalId == Guid.Empty) throw new ArgumentException("Journal ID cannot be empty.", nameof(journalId));
+        if (sequence <= 0) throw new ArgumentOutOfRangeException(nameof(sequence));
+        if (!Enum.IsDefined(kind)) throw new ArgumentOutOfRangeException(nameof(kind));
+        ArgumentException.ThrowIfNullOrWhiteSpace(aggregateType); ArgumentException.ThrowIfNullOrWhiteSpace(aggregateId);
+        JournalId = journalId; Sequence = sequence; Kind = kind; AggregateType = aggregateType; AggregateId = aggregateId; OccurredAt = occurredAt;
     }
+    /// <summary>\if KO 이 이벤트를 생성한 프로세스 내 저널의 고유 ID입니다. \endif \if EN Gets the unique ID of the process-local journal that produced this event. \endif</summary>
+    public Guid JournalId { get; }
     /// <summary>\if KO 프로세스 내 단조 증가 순서입니다. \endif \if EN Gets the process-local monotonic sequence. \endif</summary>
     public long Sequence { get; }
     /// <summary>\if KO 이벤트 종류입니다. \endif \if EN Gets the event kind. \endif</summary>
     public Gem300EventKind Kind { get; }
+    /// <summary>\if KO Aggregate 유형입니다. \endif \if EN Gets the aggregate type. \endif</summary>
+    public string AggregateType { get; }
     /// <summary>\if KO Aggregate 식별자입니다. \endif \if EN Gets the aggregate identifier. \endif</summary>
     public string AggregateId { get; }
     /// <summary>\if KO 발생 시각입니다. \endif \if EN Gets the occurrence time. \endif</summary>
@@ -179,10 +189,15 @@ public sealed class ProcessJobSnapshot
 {
     /// <summary>\if KO 스냅샷을 만듭니다. \endif \if EN Creates a snapshot. \endif</summary>
     public ProcessJobSnapshot(ProcessJobDefinition definition, ProcessJobState state) { Definition = definition ?? throw new ArgumentNullException(nameof(definition)); State = state; }
+    /// <summary>\if KO 생성 시 보존한 공정 프로그램을 포함하는 스냅샷을 만듭니다. \endif \if EN Creates a snapshot containing the process program retained at creation time. \endif</summary>
+    public ProcessJobSnapshot(ProcessJobDefinition definition, ProcessJobState state, Dreamine.Gem.Abstractions.Model.GemProcessProgram processProgram)
+        : this(definition, state) => ProcessProgram = processProgram ?? throw new ArgumentNullException(nameof(processProgram));
     /// <summary>\if KO 정의입니다. \endif \if EN Gets the definition. \endif</summary>
     public ProcessJobDefinition Definition { get; }
     /// <summary>\if KO 상태입니다. \endif \if EN Gets the state. \endif</summary>
     public ProcessJobState State { get; }
+    /// <summary>\if KO 생성 시 보존된 공정 프로그램이며 기존 직접 생성 스냅샷에서는 null일 수 있습니다. \endif \if EN Gets the process program retained at creation; it may be null on legacy directly constructed snapshots. \endif</summary>
+    public Dreamine.Gem.Abstractions.Model.GemProcessProgram? ProcessProgram { get; }
 }
 
 /// <summary>\if KO 불변 Control Job 정의입니다. \endif \if EN Represents an immutable control-job definition. \endif</summary>
@@ -234,19 +249,51 @@ public sealed class SubstrateArrivalPlan
     public string DestinationLocation { get; }
 }
 
+/// <summary>\if KO Experimental 도착 계획에서 애플리케이션이 명시한 Slot 인덱스와 Substrate ID 연결입니다. Wire 모델이 아닙니다. \endif \if EN Represents an application-declared slot-index/substrate-ID association in an experimental arrival plan; it is not a wire model. \endif</summary>
+public sealed class CarrierSubstrateSlotAssignment
+{
+    /// <summary>\if KO 명시적 Slot 연결을 만듭니다. \endif \if EN Creates an explicit slot association. \endif</summary>
+    public CarrierSubstrateSlotAssignment(int slotIndex, string substrateId)
+    {
+        if (slotIndex < 0) throw new ArgumentOutOfRangeException(nameof(slotIndex));
+        ArgumentException.ThrowIfNullOrWhiteSpace(substrateId);
+        SlotIndex = slotIndex; SubstrateId = substrateId;
+    }
+    /// <summary>\if KO 애플리케이션 계획 내 0 기반 Slot 인덱스입니다. \endif \if EN Gets the zero-based slot index within the application plan. \endif</summary>
+    public int SlotIndex { get; }
+    /// <summary>\if KO 해당 Slot에 명시적으로 연결한 Substrate ID입니다. \endif \if EN Gets the substrate ID explicitly associated with the slot. \endif</summary>
+    public string SubstrateId { get; }
+}
+
 /// <summary>\if KO Carrier 도착의 불변 자체 통합 계획입니다. Experimental이며 wire 모델이 아닙니다. \endif \if EN Represents an immutable application integration plan for carrier arrival; it is experimental and not a wire model. \endif</summary>
 public sealed class CarrierArrivalPlan
 {
     private readonly ReadOnlyCollection<CarrierSlotState> _slotMap;
     private readonly ReadOnlyCollection<SubstrateArrivalPlan> _substrates;
+    private readonly ReadOnlyCollection<CarrierSubstrateSlotAssignment> _slotAssignments;
     /// <summary>\if KO Carrier 도착 계획을 만듭니다. \endif \if EN Creates a carrier arrival plan. \endif</summary>
     public CarrierArrivalPlan(string portId, string carrierId, IEnumerable<CarrierSlotState> slotMap, IEnumerable<SubstrateArrivalPlan> substrates)
+        : this(portId, carrierId, slotMap, substrates, null) { }
+    /// <summary>\if KO 애플리케이션 수준의 명시적 Slot↔Substrate 연결을 포함하여 Carrier 도착 계획을 만듭니다. \endif \if EN Creates a carrier-arrival plan with explicit application-level slot/substrate associations. \endif</summary>
+    public CarrierArrivalPlan(string portId, string carrierId, IEnumerable<CarrierSlotState> slotMap, IEnumerable<SubstrateArrivalPlan> substrates, IEnumerable<CarrierSubstrateSlotAssignment>? slotAssignments)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(portId); ArgumentException.ThrowIfNullOrWhiteSpace(carrierId); ArgumentNullException.ThrowIfNull(slotMap); ArgumentNullException.ThrowIfNull(substrates);
         var slots = slotMap.ToArray(); var materials = substrates.ToArray();
         if (slots.Length == 0) throw new ArgumentException("Slot map cannot be empty.", nameof(slotMap));
+        if (slots.Any(static value => !Enum.IsDefined(value))) throw new ArgumentException("Slot-map values must be defined.", nameof(slotMap));
         if (materials.Any(static value => value is null) || materials.Select(static value => value.SubstrateId).Distinct(StringComparer.Ordinal).Count() != materials.Length || materials.Select(static value => value.SourceLocation).Distinct(StringComparer.Ordinal).Count() != materials.Length) throw new ArgumentException("Substrate IDs and source locations must be unique.", nameof(substrates));
-        PortId = portId; CarrierId = carrierId; _slotMap = Array.AsReadOnly(slots); _substrates = Array.AsReadOnly(materials);
+        var assignments = slotAssignments?.ToArray() ?? [];
+        if (assignments.Any(static value => value is null) || assignments.Select(static value => value.SlotIndex).Distinct().Count() != assignments.Length || assignments.Select(static value => value.SubstrateId).Distinct(StringComparer.Ordinal).Count() != assignments.Length)
+            throw new ArgumentException("Slot assignments must use unique slot indexes and substrate IDs.", nameof(slotAssignments));
+        if (slotAssignments is not null)
+        {
+            var materialIds = materials.Select(static value => value.SubstrateId).ToHashSet(StringComparer.Ordinal);
+            if (assignments.Length != materials.Length || assignments.Any(value => value.SlotIndex >= slots.Length || !materialIds.Contains(value.SubstrateId) || slots[value.SlotIndex] is not (CarrierSlotState.CorrectlyOccupied or CarrierSlotState.NotEmpty)))
+                throw new ArgumentException("Explicit slot assignments must map every planned substrate to one occupied slot.", nameof(slotAssignments));
+            var occupied = slots.Select(static (state, index) => (state, index)).Where(static value => value.state is CarrierSlotState.CorrectlyOccupied or CarrierSlotState.NotEmpty).Select(static value => value.index).ToHashSet();
+            if (!occupied.SetEquals(assignments.Select(static value => value.SlotIndex))) throw new ArgumentException("Every occupied slot must have exactly one explicit substrate assignment.", nameof(slotAssignments));
+        }
+        PortId = portId; CarrierId = carrierId; HasExplicitSlotAssignments = slotAssignments is not null; _slotMap = Array.AsReadOnly(slots); _substrates = Array.AsReadOnly(materials); _slotAssignments = Array.AsReadOnly(assignments);
     }
     /// <summary>\if KO Port ID입니다. \endif \if EN Gets the port ID. \endif</summary>
     public string PortId { get; }
@@ -256,4 +303,8 @@ public sealed class CarrierArrivalPlan
     public IReadOnlyList<CarrierSlotState> SlotMap => _slotMap;
     /// <summary>\if KO 기판 계획입니다. \endif \if EN Gets substrate plans. \endif</summary>
     public IReadOnlyList<SubstrateArrivalPlan> Substrates => _substrates;
+    /// <summary>\if KO 애플리케이션이 Slot 연결을 명시했는지 여부입니다. \endif \if EN Gets whether application-level slot associations were supplied explicitly. \endif</summary>
+    public bool HasExplicitSlotAssignments { get; }
+    /// <summary>\if KO 명시적 Slot↔Substrate 연결입니다. 순서나 위치 ID에서 암시적으로 추론하지 않습니다. \endif \if EN Gets explicit slot/substrate associations; no association is inferred from ordering or location IDs. \endif</summary>
+    public IReadOnlyList<CarrierSubstrateSlotAssignment> SlotAssignments => _slotAssignments;
 }
