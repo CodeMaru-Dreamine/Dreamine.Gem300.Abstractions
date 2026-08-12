@@ -3,7 +3,7 @@
     <TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
     <AssemblyName>Dreamine.Gem300.Abstractions</AssemblyName><RootNamespace>Dreamine.Gem300.Abstractions</RootNamespace>
     <PackageId>Dreamine.Gem300.Abstractions</PackageId><Version>1.0.0</Version><Authors>Dreamine Core Team</Authors><Company>Dreamine</Company>
-    <Description>Shared contracts for future Dreamine GEM300 capability modules.</Description>
+    <Description>Shared contracts for Dreamine GEM300 domain capability modules.</Description>
     <PackageTags>dreamine;gem300;gem;abstractions;contracts</PackageTags><PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/CodeMaru-Dreamine/Dreamine.Gem300.Abstractions</RepositoryUrl><Title>Dreamine.Gem300.Abstractions</Title>
     <Copyright>© 2026 Dreamine Core Team. All rights reserved.</Copyright>
