@@ -1,8 +1,19 @@
 # Dreamine.Gem300.Abstractions
 
+[![CI](https://github.com/CodeMaru-Dreamine/Dreamine.Gem300.Abstractions/actions/workflows/ci.yml/badge.svg)](https://github.com/CodeMaru-Dreamine/Dreamine.Gem300.Abstractions/actions/workflows/ci.yml)
+[![품질 게이트](https://sonarcloud.io/api/project_badges/measure?project=CodeMaru-Dreamine_Dreamine.Gem300.Abstractions&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=CodeMaru-Dreamine_Dreamine.Gem300.Abstractions) [![보안 등급](https://sonarcloud.io/api/project_badges/measure?project=CodeMaru-Dreamine_Dreamine.Gem300.Abstractions&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=CodeMaru-Dreamine_Dreamine.Gem300.Abstractions) [![테스트 커버리지](https://sonarcloud.io/api/project_badges/measure?project=CodeMaru-Dreamine_Dreamine.Gem300.Abstractions&metric=coverage)](https://sonarcloud.io/summary/new_code?id=CodeMaru-Dreamine_Dreamine.Gem300.Abstractions)
+
 GEM300 메모리 내 도메인 경계를 위한 공급자 중립 계약, 불변 모델 및 상태 Enum입니다.
 
-[➡️ English Version](README.md)
+[➡️ English Version](https://github.com/CodeMaru-Dreamine/Dreamine.Gem300.Abstractions/blob/main/README.md)
+
+## 설치
+
+```powershell
+dotnet add package Dreamine.Gem300.Abstractions
+```
+
+구체 Runtime 없이 프로세스 내 GEM300 계약이 필요할 때 선택합니다. Carrier, Substrate, Process Job, Control Job Manager가 필요하다면 [`Dreamine.Gem300`](https://www.nuget.org/packages/Dreamine.Gem300)부터 시작하십시오.
 
 ## 범위와 증거
 
@@ -30,7 +41,7 @@ Error 값은 포함하지 않습니다.
 
 기존 Interface와 Constructor는 유지했습니다. Hardening 공개 표면은 additive이며,
 정의되지 않은 Enum 값과 불일치한 명시적 Slot 계획은 더 이른 시점에 거부합니다.
-[API 검토](docs/API_REVIEW.md)와 생성된 [공개 API 목록](docs/PUBLIC_API.md)을
+[API 검토](https://github.com/CodeMaru-Dreamine/Dreamine.Gem300.Abstractions/blob/main/docs/API_REVIEW.md)와 생성된 [공개 API 목록](https://github.com/CodeMaru-Dreamine/Dreamine.Gem300.Abstractions/blob/main/docs/PUBLIC_API.md)을
 확인하십시오.
 
 ## 라이선스
