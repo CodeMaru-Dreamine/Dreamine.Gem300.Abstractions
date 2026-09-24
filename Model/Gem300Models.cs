@@ -18,11 +18,16 @@ public sealed class Gem300ObjectKey : IEquatable<Gem300ObjectKey>
     public string ObjectType { get; }
     /// <summary>\if KO 객체 ID입니다. \endif \if EN Gets the object ID. \endif</summary>
     public string ObjectId { get; }
-    /// <inheritdoc />
+    /// <summary>\if KO 같은 객체 유형과 객체 ID를 가진 키인지 비교합니다. \endif \if EN Determines whether another key has the same object type and object ID. \endif</summary>
+    /// <param name="other">\if KO 비교할 다른 키입니다. \endif \if EN The other key to compare. \endif</param>
+    /// <returns>\if KO 두 구성 요소가 모두 같으면 true입니다. \endif \if EN True when both key components are equal. \endif</returns>
     public bool Equals(Gem300ObjectKey? other) => other is not null && StringComparer.Ordinal.Equals(ObjectType, other.ObjectType) && StringComparer.Ordinal.Equals(ObjectId, other.ObjectId);
-    /// <inheritdoc />
+    /// <summary>\if KO 지정한 객체가 같은 GEM300 객체 키인지 비교합니다. \endif \if EN Determines whether the specified object is an equal GEM300 object key. \endif</summary>
+    /// <param name="obj">\if KO 비교할 객체입니다. \endif \if EN The object to compare. \endif</param>
+    /// <returns>\if KO 같은 객체 키이면 true입니다. \endif \if EN True when the object is an equal key. \endif</returns>
     public override bool Equals(object? obj) => Equals(obj as Gem300ObjectKey);
-    /// <inheritdoc />
+    /// <summary>\if KO 객체 유형과 객체 ID의 서수 기반 해시 코드를 반환합니다. \endif \if EN Returns an ordinal hash code for the object type and object ID. \endif</summary>
+    /// <returns>\if KO 이 키의 해시 코드입니다. \endif \if EN The hash code for this key. \endif</returns>
     public override int GetHashCode() => HashCode.Combine(StringComparer.Ordinal.GetHashCode(ObjectType), StringComparer.Ordinal.GetHashCode(ObjectId));
 }
 
